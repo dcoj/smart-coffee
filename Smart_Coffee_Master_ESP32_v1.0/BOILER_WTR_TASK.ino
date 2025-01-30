@@ -37,7 +37,7 @@ void BOILER_WTR_TASK(void *pvParameters) {
         // Check for boiler 1 probe being triggered
         if (configManager.config.B1_WTR_PROBE) {
             if (B1_TOUCH_VALUE > configManager.config.B1_REFILL_TRIG) {
-                if (!REFILL_IN_PROGRESS && !BREW_SW_ON) {
+                if (!REFILL_IN_PROGRESS && !BREW_SW_ON && !STEAM_SW_ON) {
                     REFILL_IN_PROGRESS = true;
                     REFILL_B1 = true;
                     digitalWrite(ELEMENT_1, HIGH); // Element 1 OFF
