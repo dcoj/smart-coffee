@@ -28,11 +28,20 @@ void PWM_B1_ELEMENT_TASK(void *pvParameters) {
         unsigned long currentMillis = millis();
         double distanceToTarget;
 
-        // Calculate distance to target based on whether we're targeting temperature or pressure
-        if (configManager.config.TARGET_TEMP_B1) {
-            distanceToTarget = configManager.config.B1_TEMP - TEMP_C_1;
-        } else {
-            distanceToTarget = configManager.config.B1_KPA - PRESSURE_KPA_1;
+        // Calculate distance to target based on whether we're targeting temperature or pressure and if steam targets are active
+        if(STEAM_SW_ON) {
+            if (configManager.config.TARGET_TEMP_B1) {
+                distanceToTarget = configManager.config.B1_STEAM_TEMP - TEMP_C_1;
+            } else {
+                distanceToTarget = configManager.config.B1_STEAM_KPA - PRESSURE_KPA_1;
+            }
+        }
+        else {
+            if (configManager.config.TARGET_TEMP_B1) {
+                distanceToTarget = configManager.config.B1_TEMP - TEMP_C_1;
+            } else {
+                distanceToTarget = configManager.config.B1_KPA - PRESSURE_KPA_1;
+            }
         }
 
         // Implement PWM control based on the distance to target

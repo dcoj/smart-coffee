@@ -85,7 +85,9 @@ double TEMP_C_2 = 0.0; // Global variable for the temp 2
 #define CONFIG_FILE_PATH "/config/settings.json"
 struct Config {
     double B1_KPA;
+    double B1_STEAM_KPA;
     double B1_TEMP;
+    double B1_STEAM_TEMP;
     double B1_KP;
     double B1_KI;
     double B1_KD;
@@ -138,6 +140,7 @@ struct Config {
     double B2_REFILL_TRIG;
     bool TOGGLE_BREW_SW;
     bool TOGGLE_ES_SW;
+    bool TOGGLE_STEAM_SW;
     bool B1_WTR_PROBE;
     bool B2_WTR_PROBE;
     bool DISABLE_RELAYS;
@@ -177,7 +180,7 @@ struct Config {
     bool WTR_RES_PROBE;
     bool US_LVL_DETECT;
 
-    Config() : B1_KPA(DEFAULT_B1_KPA), B1_TEMP(DEFAULT_B1_TEMP), B1_KP(DEFAULT_B1_KP), B1_KI(DEFAULT_B1_KI), B1_KD(DEFAULT_B1_KD),
+    Config() : B1_KPA(DEFAULT_B1_KPA), B1_STEAM_KPA(DEFAULT_B1_STEAM_KPA), B1_TEMP(DEFAULT_B1_TEMP), B1_STEAM_TEMP(DEFAULT_B1_STEAM_TEMP), B1_KP(DEFAULT_B1_KP), B1_KI(DEFAULT_B1_KI), B1_KD(DEFAULT_B1_KD),
                SHOT_ML(DEFAULT_SHOT_ML), SHOT_GRAM(DEFAULT_SHOT_GRAM), WEIGHT_OFFSET(DEFAULT_WEIGHT_OFFSET),
                SCALE_FACTOR(DEFAULT_SCALE_FACTOR), FM1_HZ(DEFAULT_FM1_HZ), FM2_HZ(DEFAULT_FM2_HZ),
                SHOT_TIMER(DEFAULT_SHOT_TIMER), PRIME_PUMP(DEFAULT_PRIME_PUMP),
@@ -192,7 +195,7 @@ struct Config {
                TEMP_SENSOR_2(DEFAULT_TEMP_SENSOR_2), TRANSDUCER_1(DEFAULT_TRANSDUCER_1), TRANSDUCER_2(DEFAULT_TRANSDUCER_2), 
                TRANSDUCER_1_KPA_SAFE(DEFAULT_TRANSDUCER_1_KPA_SAFE), PRE_INFUSION(DEFAULT_PRE_INFUSION), TARGET_TEMP_B1(DEFAULT_TARGET_TEMP_B1),
                PID_CONTROL_B1(DEFAULT_PID_CONTROL_B1), PAUSE_REFILL(DEFAULT_PAUSE_REFILL), FLOW_METER_2_CAL(DEFAULT_FLOW_METER_2_CAL),
-               B1_REFILL_TRIG(DEFAULT_B1_REFILL_TRIG), B2_REFILL_TRIG(DEFAULT_B2_REFILL_TRIG), TOGGLE_BREW_SW(DEFAULT_TOGGLE_BREW_SW), TOGGLE_ES_SW(DEFAULT_TOGGLE_ES_SW),
+               B1_REFILL_TRIG(DEFAULT_B1_REFILL_TRIG), B2_REFILL_TRIG(DEFAULT_B2_REFILL_TRIG), TOGGLE_BREW_SW(DEFAULT_TOGGLE_BREW_SW), TOGGLE_ES_SW(DEFAULT_TOGGLE_ES_SW), TOGGLE_STEAM_SW(DEFAULT_TOGGLE_STEAM_SW),
                B1_WTR_PROBE(DEFAULT_B1_WTR_PROBE), B2_WTR_PROBE(DEFAULT_B2_WTR_PROBE), DISABLE_RELAYS(DEFAULT_DISABLE_RELAYS),
                // VALUES STORED FOR SLAVE ESP32
                B2_KPA(DEFAULT_B2_KPA), B2_TEMP(DEFAULT_B2_TEMP), B2_KP(DEFAULT_B2_KP), B2_KI(DEFAULT_B2_KI), B2_KD(DEFAULT_B2_KD),
@@ -232,6 +235,8 @@ public:
         // Load each setting from the file, or use default if not found
         config.B1_KPA = doc["B1_KPA"] | DEFAULT_B1_KPA;
         config.B1_TEMP = doc["B1_TEMP"] | DEFAULT_B1_TEMP;
+        config.B1_STEAM_KPA = doc["B1_STEAM_KPA"] | DEFAULT_B1_STEAM_KPA;
+        config.B1_STEAM_TEMP = doc["B1_STEAM_TEMP"] | DEFAULT_B1_STEAM_TEMP;
         config.B1_KP = doc["B1_KP"] | DEFAULT_B1_KP;
         config.B1_KI = doc["B1_KI"] | DEFAULT_B1_KI;
         config.B1_KD = doc["B1_KD"] | DEFAULT_B1_KD;
@@ -284,6 +289,7 @@ public:
         config.B2_REFILL_TRIG = doc["B2_REFILL_TRIG"] | DEFAULT_B2_REFILL_TRIG;
         config.TOGGLE_BREW_SW = doc["TOGGLE_BREW_SW"] | DEFAULT_TOGGLE_BREW_SW;
         config.TOGGLE_ES_SW = doc["TOGGLE_ES_SW"] | DEFAULT_TOGGLE_ES_SW;
+        config.TOGGLE_STEAM_SW = doc["TOGGLE_STEAM_SW"] | DEFAULT_TOGGLE_STEAM_SW;
         config.B1_WTR_PROBE = doc["B1_WTR_PROBE"] | DEFAULT_B1_WTR_PROBE;
         config.B2_WTR_PROBE = doc["B2_WTR_PROBE"] | DEFAULT_B2_WTR_PROBE;
         config.DISABLE_RELAYS = doc["DISABLE_RELAYS"] | DEFAULT_DISABLE_RELAYS;
@@ -337,7 +343,9 @@ public:
         // Set each setting to the document
         StaticJsonDocument<2048> doc;
         doc["B1_KPA"] = config.B1_KPA;
+        doc["B1_STEAM_KPA"] = config.B1_STEAM_KPA;
         doc["B1_TEMP"] = config.B1_TEMP;
+        doc["B1_STEAM_TEMP"] = config.B1_STEAM_TEMP;
         doc["B1_KP"] = config.B1_KP;
         doc["B1_KI"] = config.B1_KI;
         doc["B1_KD"] = config.B1_KD;
@@ -390,6 +398,7 @@ public:
         doc["B2_REFILL_TRIG"] = config.B2_REFILL_TRIG;
         doc["TOGGLE_BREW_SW"] = config.TOGGLE_BREW_SW;
         doc["TOGGLE_ES_SW"] = config.TOGGLE_ES_SW;
+        doc["TOGGLE_STEAM_SW"] = config.TOGGLE_STEAM_SW;
         doc["B1_WTR_PROBE"] = config.B1_WTR_PROBE;
         doc["B2_WTR_PROBE"] = config.B2_WTR_PROBE;
         doc["DISABLE_RELAYS"] = config.DISABLE_RELAYS;
@@ -686,16 +695,20 @@ volatile int ULTRA_WATER_PERCENTAGE = 100; // Global variable for water percenta
 #define RLY4_PIN 33     // Relay 4 pin
 #define BREW_SW_PIN 36  // Brew switch/lever pin
 #define ES_MODE_PIN 39  // Espresso mode switch pin
+#define STEAM_MODE_PIN 23  // Steam mode switch pin
 
 // ========== TOGGLE SWITCHES ==========
 volatile bool ES_SW_ON = false;
 volatile bool BREW_SW_ON = false;
+volatile bool STEAM_SW_ON = false;
 
 volatile bool BREW_SW_PRESSED = false;  // Current state of the brew switch
 volatile bool ES_SW_PRESSED = false;  // Current state of the espresso mode switch
+volatile bool STEAM_SW_PRESSED = false;  // Current state of the steam mode switch
 
 volatile bool BREW_SW_DEBOUNCE = false;  // Debounced state of the brew switch
 volatile bool ES_SW_DEBOUNCE = false;  // Debounced state of the espresso mode switch
+volatile bool STEAM_SW_DEBOUNCE = false;  // Debounced state of the espresso mode switch
 
 void IRAM_ATTR handleBrewSwitch() {
     static uint32_t last_interrupt_time = 0;
@@ -711,6 +724,15 @@ void IRAM_ATTR handleEsModeSwitch() {
     uint32_t interrupt_time = millis();
     if (interrupt_time - last_interrupt_time > 5) { // debounce time in ms
         ES_SW_PRESSED = digitalRead(ES_MODE_PIN) == LOW;
+    }
+    last_interrupt_time = interrupt_time;
+}
+
+void IRAM_ATTR handleSteamModeSwitch() {
+    static uint32_t last_interrupt_time = 0;
+    uint32_t interrupt_time = millis();
+    if (interrupt_time - last_interrupt_time > 5) { // debounce time in ms
+        STEAM_SW_PRESSED = digitalRead(STEAM_MODE_PIN) == LOW;
     }
     last_interrupt_time = interrupt_time;
 }
@@ -869,6 +891,13 @@ void setup() {
         attachInterrupt(digitalPinToInterrupt(ES_MODE_PIN), handleEsModeSwitch, CHANGE);
     } else {
         pinMode(ES_MODE_PIN, INPUT_PULLUP);
+    }
+
+    if (configManager.config.TOGGLE_STEAM_SW) {
+        pinMode(STEAM_MODE_PIN, INPUT_PULLUP);
+        attachInterrupt(digitalPinToInterrupt(STEAM_MODE_PIN), handleSteamModeSwitch, CHANGE);
+    } else {
+        pinMode(STEAM_MODE_PIN, INPUT_PULLUP);
     }
 
     // BOILER 1 ELEMENT RELAY

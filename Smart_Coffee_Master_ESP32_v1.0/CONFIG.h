@@ -56,7 +56,8 @@
 
 // =============BREW AND ESPRESSO SWITCH LOGIC =============
 #define DEFAULT_TOGGLE_BREW_SW false      // False = Pump ON when the switch is closed. True = Pump will toggle on/off with each press of the switch
-#define DEFAULT_TOGGLE_ES_SW false         // False = Espresso mode ON when the switch is closed. True = espresso mode will toggle on/off with each press of the switch
+#define DEFAULT_TOGGLE_ES_SW false        // False = Espresso mode ON when the switch is closed. True = espresso mode will toggle on/off with each press of the switch
+#define DEFAULT_TOGGLE_STEAM_SW false     // False = Steam mode ON when switch is closed. True = Steam mode will toggle on/off with each press
 
 // ============= PRESSURE TRANSDUCER 1 =============
 #define DEFAULT_TRANSDUCER_1 true           // Enabled/Disable pressure transducer 1
@@ -71,7 +72,10 @@
 // Pressure or Temprature target
 #define DEFAULT_TARGET_TEMP_B1 true        // Enabled/Disable target temperature for boiler 1 (disabled = target is pressure in kPa)
 #define DEFAULT_B1_KPA 50                   // Boiler 1 target kPa value
+#define DEFAULT_B1_STEAM_KPA 50             // Boiler 1 target kPa value
 #define DEFAULT_B1_TEMP 93                  // Boiler 1 target Celsius value
+#define DEFAULT_B1_STEAM_TEMP 140           // Steam mode temperature target in Celsius
+
 // PWM Tuning
 // (These settings are only used if "DEFAULT_PID_CONTROL_B1" is false)
 #define DEFAULT_B1_PWR 200                  // Boiler 1 PWR duration (value in milliseconds. 1000ms = 1 second)

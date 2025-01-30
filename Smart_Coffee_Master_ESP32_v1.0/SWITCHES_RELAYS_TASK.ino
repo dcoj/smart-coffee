@@ -7,6 +7,7 @@
 void SWITCHES_RELAYS_TASK(void *pvParameters) {
     for (;;) {
         static bool LAST_BREW_SW_PRESSED = false;
+        static bool LAST_STEAM_SW_PRESSED = false;
         static bool LAST_ES_SW_PRESSED = false;
 
         // Check for error state at the beginning of each loop iteration
@@ -38,6 +39,18 @@ void SWITCHES_RELAYS_TASK(void *pvParameters) {
           BREW_SW_ON = !digitalRead(BREW_SW_PIN);
         }
 
+        if (configManager.config.TOGGLE_STEAM_SW) {
+            // Check for changes in the debounced state for espresso mode switch
+            if (STEAM_SW_PRESSED != LAST_STEAM_SW_PRESSED) {
+                if (STEAM_SW_PRESSED) {
+                    STEAM_SW_DEBOUNCE = !STEAM_SW_DEBOUNCE;  // Toggle debounced state on press
+                    STEAM_SW_ON = STEAM_SW_DEBOUNCE;  // Update the main flag
+                }
+                LAST_STEAM_SW_PRESSED = STEAM_SW_PRESSED;
+            }
+        } else {
+          STEAM_SW_ON = !digitalRead(STEAM_MODE_PIN);
+        }
 
         if (configManager.config.TOGGLE_ES_SW) {
             // Check for changes in the debounced state for espresso mode switch
